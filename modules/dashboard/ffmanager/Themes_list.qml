@@ -10,7 +10,7 @@ Item{
     id:themes_list
     Layout.fillHeight:true
     Layout.maximumWidth: 350
-    property var model: ["Gaming", "Research", "Development", "Music"] //liste des themes
+    property var themes: ["Gaming", "Research", "Development", "Music"] //liste des themes
     StyledRect{
         anchors.fill:parent
         radius: Tokens.rounding.large
@@ -24,29 +24,23 @@ Item{
                 
             }
             FF_Manager_Buttons{
-
-            }
-            ListView{
-                Layout.fillHeight:true
                 Layout.fillWidth: true
-                spacing:8
+                Layout.maximumWidth: themes_list.width
+            }
+            ScrollView {
+                id: scroll
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
 
-                model:themes_list.model
-
-                delegate:StyledRect{
-                    width: ListView.view.width
-                    height:80
-
-                    radius: Tokens.rounding.large
-
-                    color:Colours.tPalette.m3surfaceContainer
-                    
-                    StyledText{
-                        anchors.centerIn: parent
-                        text: modelData
+                ColumnLayout {
+                    width: scroll.availableWidth
+                    Repeater {
+                        model: themes_list.themes
+                        delegate:Selector{
+                        }
                     }
                 }
-
             }
         }
     }
