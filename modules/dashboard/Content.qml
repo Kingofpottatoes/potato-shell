@@ -30,6 +30,14 @@ Item {
                 text: Tr.tr("Media"),
                 enabled: Config.dashboard.showMedia
             },
+            //>>> firefox manager:>>>
+            {
+                component:ffmanagerComponent,
+                iconName:"travel_explore",
+                text: Tr.tr("Firefox"),
+                enabled:true
+            },
+            //<<< firefox manager <<<
             // >>> caelestia-notes: managed block - do not edit; `install.sh --uninstall` removes it >>>
             {
                 component: notesComponent,
@@ -177,7 +185,30 @@ Item {
                     screenState: root.screenState
                 }
             }
+            // >>> firefox manager >>>
+            Component{
+                id:ffmanagerComponent
+                // A wrapper Item + URL Loader (not a direct "NotesTab {}") so that a missing or broken
+                // Notes file can never stop this file - and therefore the whole dashboard - from loading.
+                Item {
+                    implicitWidth: ffmanagerLoader.item ? ffmanagerLoader.item.implicitWidth : 840
+                    implicitHeight: ffmanagerLoader.item ? ffmanagerLoader.item.implicitHeight : 480
 
+                    Loader {
+                        id: ffmanagerLoader
+
+                        anchors.fill: parent
+                        source: Qt.resolvedUrl("FFmanagerTab.qml")
+                    }
+
+                    StyledText {
+                        anchors.centerIn: parent
+                        visible: ffmanagerLoader.status === Loader.Error
+                        text: Tr.tr("Firefox manager failed to load. Re-run the Firefox manager installer.")
+                    }
+                }
+            }
+            // <<< firefox manager <<<
             // >>> caelestia-notes: managed block - do not edit; `install.sh --uninstall` removes it >>>
             Component {
                 id: notesComponent
