@@ -20,9 +20,12 @@ Item{
         Themes_list{
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumWidth: 0
         }
         Current_Theme_Urls_Shower{
-            
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumWidth: 0
         }
     }
 }

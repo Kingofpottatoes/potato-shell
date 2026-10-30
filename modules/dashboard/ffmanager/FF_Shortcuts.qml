@@ -2,9 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Caelestia.Config
-import qs.components
 import qs.components.controls
-import qs.services
 
 
 Item{
@@ -21,23 +19,22 @@ Item{
             id: scroll
 
             Layout.preferredWidth: 260
-            Layout.fillHeight: true
+            Layout.preferredHeight: 48
             Layout.minimumWidth: 260
+            Layout.alignment: Qt.AlignVCenter
 
             contentWidth: urls_Row.implicitWidth
             contentHeight: availableHeight
             clip: true
 
-            ScrollBar.horizontal.policy: ScrollBar.AsNeeded
-            ScrollBar.horizontal.interactive: true
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+            ScrollBar.horizontal: null
 
             Row {
                 id: urls_Row
                 spacing: Tokens.spacing.small
-                height: parent.height
+                height: scroll.height
 
-                                IconButton { 
+                IconButton { 
                     icon: "search"
                     type: ButtonBase.Tonal
                     onClicked: {}
@@ -85,10 +82,22 @@ Item{
             }
 
             WheelHandler {
+                property real scrollSensitivity: 0.3
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
                 onWheel: event => {
-                    scroll.contentItem.contentX -= event.angleDelta.y
+                    const max = Math.max(
+                        0,
+                        scroll.contentWidth - scroll.availableWidth
+                    )
+
+                    const flickable = scroll.contentItem
+
+                    flickable.contentX = Math.max(
+                        0,
+                        Math.min(max, flickable.contentX - event.angleDelta.y*scrollSensitivity)
+                    )
+
                     event.accepted = true
                 }
             }
@@ -100,8 +109,9 @@ Item{
         }
 
         IconButton {
+            Layout.alignment: Qt.AlignVCenter
             icon: "settings"
-            type: ButtonBase.Tonal
+            type: ButtonBase.Filled
             onClicked: {}
         }
     }

@@ -35,7 +35,7 @@ Item{
                 id: selectedText
                 anchors.centerIn: parent
                 text: root.n_selected +" selected"
-                font: Tokens.font.text.smart_display
+                font: Tokens.font.title
                 color: Colours.palette.m3onSurface
                 elide: Text.ElideRight
             }

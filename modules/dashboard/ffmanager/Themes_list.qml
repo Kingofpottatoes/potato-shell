@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
-import qs.components.controls
 import qs.services
 
 Item{
@@ -32,6 +31,9 @@ Item{
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AlwaysOff
+                }
 
                 ColumnLayout {
                     width: scroll.availableWidth
