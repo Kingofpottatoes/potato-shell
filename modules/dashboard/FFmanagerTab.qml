@@ -9,7 +9,6 @@ import QtQuick.Layouts
 
 Item{
     id: root
-
     implicitWidth: 840
     implicitHeight: 380
 

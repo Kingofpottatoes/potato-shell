@@ -9,7 +9,10 @@ Item{
     id:themes_list
     Layout.fillHeight:true
     Layout.maximumWidth: 350
-    property var themes: ["Gaming", "Research", "Development", "Music"] //liste des themes
+    property var themes: FFManager_Data.themes_list //liste des themes
+    Component.onCompleted: {
+        FFManager_Data.get_themes_names()
+    }
     StyledRect{
         anchors.fill:parent
         radius: Tokens.rounding.large
@@ -40,6 +43,7 @@ Item{
                     Repeater {
                         model: themes_list.themes
                         delegate:Selector{
+                            theme_name:modelData
                         }
                     }
                 }

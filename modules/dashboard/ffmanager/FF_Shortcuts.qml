@@ -28,7 +28,13 @@ Item{
             clip: true
 
             ScrollBar.horizontal: null
-
+                            NumberAnimation {
+                    id: scrollAnimation
+                    target: scroll.contentItem
+                    property: "contentX"
+                    duration: 200
+                    easing.type: Easing.OutCubic
+                }
             Row {
                 id: urls_Row
                 spacing: Tokens.spacing.small
@@ -83,20 +89,26 @@ Item{
 
             WheelHandler {
                 property real scrollSensitivity: 0.3
+
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
                 onWheel: event => {
-                    const max = Math.max(
-                        0,
-                        scroll.contentWidth - scroll.availableWidth
-                    )
-
                     const flickable = scroll.contentItem
+                    const max = Math.max(0, scroll.contentWidth - scroll.availableWidth)
 
-                    flickable.contentX = Math.max(
+                    // On repart de la destination précédente si l'animation tourne déjà
+                    const current = scrollAnimation.running
+                        ? scrollAnimation.to
+                        : flickable.contentX
+
+                    const target = Math.max(
                         0,
-                        Math.min(max, flickable.contentX - event.angleDelta.y*scrollSensitivity)
+                        Math.min(max, current - event.angleDelta.y * scrollSensitivity)
                     )
+
+                    scrollAnimation.stop()
+                    scrollAnimation.to = target
+                    scrollAnimation.start()
 
                     event.accepted = true
                 }

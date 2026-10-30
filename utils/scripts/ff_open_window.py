@@ -76,19 +76,22 @@ def move_window(address,workspace):
             else:
                 raise RuntimeError("window didnt move")
     raise RuntimeError("window disapeared")
-
-def open_theme(name):
+def get_url_from_theme(name):
     themes_folder=Path.home()/".local"/"share"/"ff-windows"
     theme_path=themes_folder/(name+".json")
-    target_ws="special:"+str(first_unoccupied(1,occupied_ws(True),99))
     with theme_path.open() as f:
         theme=json.load(f)
         theme_tabs=theme["tabs"]
         urls= [theme_tabs[i]["url"] for i in range(0,len(theme_tabs)) if theme_tabs[i]["url"].startswith(("http://", "https://"))]
-        current_windows=window_addresses()
-        launch_firefox(urls)
-        address_firefox=get_new_window_address(current_windows,5)
-        move_window(address_firefox[0],target_ws)
+    print(json.dumps(urls))
+
+def open_theme(name):
+    target_ws="special:"+str(first_unoccupied(1,occupied_ws(True),99))
+    current_windows=window_addresses()
+    urls=get_url_from_theme(name)
+    launch_firefox(urls)
+    address_firefox=get_new_window_address(current_windows,5)
+    move_window(address_firefox[0],target_ws)
 def list_themes(themes_folder):
     if not themes_folder.is_dir():
         return []
@@ -104,8 +107,15 @@ def main():
         return 2
     if args[0] == "--list":
         themes=list_themes(themes_path)
-        for theme in themes:
-            print(theme)
+        print(json.dumps(themes))
+        return 0
+    elif args[0] == "--list-theme-urls":
+        if len(args)!=2:
+            raise ValueError("usage: ff_open_window --list-theme-urls NOM_THEME")
+        if not is_valid_name(args[0]):
+            raise ValueError("invalid name")
+        theme_name=args[1]
+        get_url_from_theme(theme_name)
         return 0
     try:
         if not is_valid_name(args[0]):
