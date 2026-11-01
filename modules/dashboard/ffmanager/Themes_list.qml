@@ -40,6 +40,7 @@ Item{
 
                 ColumnLayout {
                     width: scroll.availableWidth
+                    spacing: 3
                     Repeater {
                         model: themes_list.themes
                         delegate:Selector{

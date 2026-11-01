@@ -8,26 +8,45 @@ import Caelestia
 
 Singleton{
     id:root
-    property var themes_list:[]
-    property var theme_url_list:[]
-    property var selectedUrls: []
-    property var selectedThemes:[]
-    property var single_window_urls:[]
-    property string workspace_destination: ""
+    property var themes_list:[]//theme list showed
+    property var theme_url_list:[] //url of the theme selected if only one, else [] 
+    property var selectedUrls: [] //url added by the sortcuts
+    property var selectedThemes:[] //list of selected themes
+    property var single_window_urls:[] //list of urls who will be launched
+    property var showed_urls:[] //url showed
+    property string workspace_destination: "" //workspace selection
+    property var processQueue: [] //list of python request
+    property bool processBusy: false //is the Process busy
+    property int requestId:0 //avoid getting outdated response
+    property int hoverRequestId:0 
     readonly property string script_path:
+    
     CUtils.toLocalFile(Qt.resolvedUrl("../utils/scripts/ff_open_window.py"))
-
+    
     function runPython(args, callback) {
-        pythonProcess.command = [
+        root.processQueue=[...root.processQueue,{args:[...args],callback}]
+        root.processNext()
+    }
+    function processNext(){
+        if (root.processBusy || root.processQueue.length === 0){
+            return
+        }
+        const task=root.processQueue[0]
+        
+        root.processQueue = root.processQueue.slice(1)
+        root.processBusy = true
+
+        pythonProcess.currentCallback = task.callback
+
+         pythonProcess.command = [
             "python",
             root.script_path,
-            ...args
+            ...task.args
         ]
 
-        pythonProcess.onResult = callback
         pythonProcess.running = true
-    }
 
+    }
     function get_themes_names(){
         runPython(["--list"],function(result){
             root.themes_list=[...result]
@@ -35,10 +54,21 @@ Singleton{
     }
 
     function addUrl(url){
+        root.selectedUrls=[...selectedUrls,url]
+        root.showed_urls=[...showed_urls,url]
     }
     function get_theme_urls(theme_name) {
+        const requestId = ++root.hoverRequestId
         runPython(["--list-theme-urls",theme_name],function(result){
-            root.theme_url_list=[...result]
+            if (requestId !== root.hoverRequestId)
+                return
+            root.theme_url_list = [...result]
+            if ((selectedThemes.length==1 && selectedThemes.includes(theme_name)||(selectedThemes.length==0))){
+                root.showed_urls=[...result,...selectedUrls]
+            }
+            else{
+            root.showed_urls = [...result]
+            }
         })
     }
     function theme_clicked(theme_name){
@@ -49,20 +79,78 @@ Singleton{
             root.selectedThemes = root.selectedThemes.filter(theme => theme !== theme_name)
         }
     }
+    function clear_selected_theme_and_urls(){
+        ++root.hoverRequestId
+        root.selectedThemes = []
+        root.selectedUrls = []
+        root.theme_url_list = []
+        root.showed_urls = []
+    }
+    function clear_urls() {
+        ++root.hoverRequestId
+        if (root.selectedThemes.length === 1) {
+            get_theme_urls(root.selectedThemes[0])
+        } else {
+            root.theme_url_list = []
+            root.showed_urls = [...root.selectedUrls]
+        }
+    }
+    function open_windows(selectedThemes,workspace_destination,selectedUrls){
+        const workspace_args= workspace_destination!=="" ? ["--workspace",workspace_destination]:[]
+
+        if (selectedThemes.length > 1){
+            //one window for each theme
+            for (const theme_name of selectedThemes){
+                runPython(["--theme-name",theme_name,...workspace_args],function(result){})
+            }
+            //supplementary window for selected urls
+            if (selectedUrls.length>0){
+                runPython(["--urls",...selectedUrls,...workspace_args],function(result){})
+            }
+        }
+        else if (selectedThemes.length==1){
+            //one theme + suppelementary urls
+            runPython(["--theme-name",selectedThemes[0],"--urls",...selectedUrls,...workspace_args],function(result){})
+        }
+        else if (selectedThemes.length==0){
+            //one window with suppelementary urls
+            runPython(["--urls",...selectedUrls,...workspace_args],function(result){})
+        }
+
+
+
+
+    }
     Process {
         id: pythonProcess
-        property var onResult: null
+        property var currentCallback: null
         command: []
 
         stdout: StdioCollector {
-            onStreamFinished: {
-                const result = JSON.parse(text)
+            id:output
+        }
 
-                if (pythonProcess.onResult) {
-                    pythonProcess.onResult(result)
-                    pythonProcess.onResult = null
+        onExited:(exitCode,exitStatus)=>{
+            const outputText=output.text.trim()
+
+            if (exitCode==0 && outputText !== ""){
+                try {
+                    const result = JSON.parse(outputText)
+                    if (pythonProcess.currentCallback)
+                        pythonProcess.currentCallback(result)
+                } catch(error) {
+                    console.error("Erreur JSON Python :", error)
+                    console.error("Sortie reçue :", outputText)
                 }
+            } 
+            else {
+                console.error("Python a terminé avec le code :", exitCode)
+                console.error("Sortie :", outputText)
             }
+            pythonProcess.currentCallback = null
+            root.processBusy = false
+
+            root.processNext()
         }
     }
 }

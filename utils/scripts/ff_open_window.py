@@ -79,51 +79,75 @@ def move_window(address,workspace):
 def get_url_from_theme(name):
     themes_folder=Path.home()/".local"/"share"/"ff-windows"
     theme_path=themes_folder/(name+".json")
+
     with theme_path.open() as f:
         theme=json.load(f)
         theme_tabs=theme["tabs"]
         urls= [theme_tabs[i]["url"] for i in range(0,len(theme_tabs)) if theme_tabs[i]["url"].startswith(("http://", "https://"))]
-    print(json.dumps(urls))
+    return urls
 
-def open_theme(name):
-    target_ws="special:"+str(first_unoccupied(1,occupied_ws(True),99))
-    current_windows=window_addresses()
-    urls=get_url_from_theme(name)
+def open(name="",supplementary_urls=None,workspace_destination=None):
+    if supplementary_urls==None:
+        supplementary_urls=[]
+    if workspace_destination==None:
+        target_ws="special:"+str(first_unoccupied(1,occupied_ws(True),99))
+    else :
+        target_ws=workspace_destination
+    currents_windows=window_addresses()
+    if name!="":
+        urls=get_url_from_theme(name)+supplementary_urls
+    else:
+        urls=supplementary_urls
     launch_firefox(urls)
-    address_firefox=get_new_window_address(current_windows,5)
+    address_firefox=get_new_window_address(currents_windows,5)
     move_window(address_firefox[0],target_ws)
+
 def list_themes(themes_folder):
     if not themes_folder.is_dir():
         return []
     themes_names=themes_folder.glob("*.json")
     themes_names=[name.stem for name in themes_names if is_valid_name(name.stem)]
     return sorted(themes_names)
-
+def help():
+    return "utulisations:\n python ff_window.py --theme-name NOM_THEME --urls URL1 URL2 URL3... --wokspace WORKSPACE_DESTINATION \n python ff_window.py --list \n python ff_window.py --list-theme-urls THEME_NAME"
 def main():
     themes_path=Path.home()/".local"/"share"/"ff-windows"
     args=sys.argv[1:]
-    if not args:
-        print("ff_open_window --list | ff_open_window NOM_THEME",file=sys.stderr)
-        return 2
-    if args[0] == "--list":
-        themes=list_themes(themes_path)
-        print(json.dumps(themes))
+    current_option=None
+    theme_name=""
+    suppelementary_urls=[]
+    workspace_destination=None
+    if args and args[0]=="--list":
+        if len(args) != 1:
+            print(help(), file=sys.stderr)
+            return 2
+
+        print(json.dumps(list_themes(themes_path)))
         return 0
-    elif args[0] == "--list-theme-urls":
-        if len(args)!=2:
-            raise ValueError("usage: ff_open_window --list-theme-urls NOM_THEME")
-        if not is_valid_name(args[0]):
-            raise ValueError("invalid name")
-        theme_name=args[1]
-        get_url_from_theme(theme_name)
+    if args and args[0] == "--list-theme-urls":
+        if len(args) != 2:
+            print(help(), file=sys.stderr)
+            return 2
+
+        print(json.dumps(get_url_from_theme(args[1])))
         return 0
-    try:
-        if not is_valid_name(args[0]):
-            raise ValueError("invalid name")
-        open_theme(args[0])
-    except (FileNotFoundError, ValueError,TimeoutError,KeyError,RuntimeError) as e:
-        print(e, file=sys.stderr)
-        return 1
+    for arg in args:
+        if arg.startswith("--"):
+            if arg not in ("--theme-name", "--urls", "--workspace"):
+                print(help(), file=sys.stderr)
+                return 2
+            current_option = arg
+            continue
+        if current_option=="--theme-name":
+            theme_name=arg #supress the other theme name to keep only the last one
+        elif current_option=="--urls":
+            suppelementary_urls.append(arg)
+        elif current_option=="--workspace":
+            workspace_destination=arg#also suppress the other workspace_destination to keep only the last one
+        else:
+            print(help(), file=sys.stderr)
+            return 2
+    open(name=theme_name,supplementary_urls=suppelementary_urls,workspace_destination=workspace_destination)
     return 0
 if __name__ == "__main__":
     sys.exit(main())

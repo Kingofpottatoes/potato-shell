@@ -3,20 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
+import qs.services
 
 Item{
     id:root
-    property var urls: [
-    "https://www.youtube.com",
-    "https://fr.wikipedia.org",
-    "https://chatgpt.com",
-    "https://www.youtube.com",
-    "https://fr.wikipedia.org",
-    "https://chatgpt.com",
-    "https://www.youtube.com",
-    "https://fr.wikipedia.org",
-    "https://chatgpt.com"
-]
+    property var urls: FFManager_Data.showed_urls
     ColumnLayout{
         anchors.fill:parent
         StyledText{
@@ -25,15 +16,16 @@ Item{
         }
         ScrollView {
             id: scroll
+
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+
             ScrollBar.vertical: ScrollBar {
                policy: ScrollBar.AlwaysOff
             }
             ColumnLayout {
-                anchors.fill:parent
-                height: scroll.availableHeight
+                width: scroll.availableWidth
                 Repeater {
                     model: root.urls
                     delegate: Url {

@@ -20,6 +20,14 @@ StyledRect{
     color:selected? Colours.tPalette.m3surfaceContainerLowest:Colours.tPalette.m3surfaceContainerHighest
     HoverHandler {
         id: hover
+        onHoveredChanged: {
+        if (hover.hovered) {
+            FFManager_Data.get_theme_urls(theme_name)
+            }
+        else {
+            FFManager_Data.clear_urls()
+        }   
+        }
     }
     TapHandler{
         onTapped:{

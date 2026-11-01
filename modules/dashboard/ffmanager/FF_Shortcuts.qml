@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components.controls
-
+import qs.services
 
 Item{
     Layout.fillWidth:true
@@ -48,12 +48,12 @@ Item{
                 IconButton { 
                     icon: "network_intelligence" 
                     type: ButtonBase.Tonal
-                    onClicked: {}
+                    onClicked: {FFManager_Data.addUrl("https://chatgpt.com/")}
                 }
                 IconButton { 
                     icon: "smart_display" 
                     type: ButtonBase.Tonal
-                    onClicked: {}
+                    onClicked: {FFManager_Data.addUrl("https://www.youtube.com/")}
                 }
                 IconButton { 
                     icon: "search"

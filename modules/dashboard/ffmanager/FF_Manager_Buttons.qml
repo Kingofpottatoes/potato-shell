@@ -10,7 +10,7 @@ import qs.services
 Item{
     id:root
 
-    property int n_selected:0
+    property int n_selected:FFManager_Data.selectedThemes.length
     Layout.fillWidth: true
     Layout.minimumHeight:80
 
@@ -47,7 +47,7 @@ Item{
         IconButton { 
             icon: "refresh"
             type: ButtonBase.Tonal  
-            onClicked: {}
+            onClicked: {FFManager_Data.clear_selected_theme_and_urls()}
         }
         IconButton { 
             icon: "place_item" 
@@ -57,7 +57,11 @@ Item{
         IconButton { 
             icon: "play_arrow" 
             type: ButtonBase.Filled 
-            onClicked: {}
+            onClicked: {FFManager_Data.open_windows(
+                FFManager_Data.selectedThemes,
+                FFManager_Data.workspace_destination,
+                FFManager_Data.selectedUrls
+            )}
         }
     }
 }
