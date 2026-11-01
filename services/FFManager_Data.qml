@@ -116,6 +116,7 @@ Singleton{
             //one window with suppelementary urls
             runPython(["--urls",...selectedUrls,...workspace_args],function(result){})
         }
+        clear_selected_theme_and_urls()
 
 
 
