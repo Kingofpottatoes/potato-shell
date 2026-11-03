@@ -16,11 +16,25 @@ Singleton{
     property var processQueue: [] //list of python request
     property bool processBusy: false //is the Process busy
     property int hoverRequestId:0 //to avoid getting outdated response
-    property bool special:true
-    readonly property string script_path:
+    property bool special:true //do we send the window in a special workspace ?
+    property bool settingsOpen:false //is settings window open ?
+    property var settings: ({ //default settings, you have the syntax now :)
+            "shortcuts": [        {
+                "title": "GitHub",
+                "url": "https://github.com",
+                "icon": "code"
+            }],
+            "defaults": {
+                "auto": true,
+                "special": true
+            }
+        })
     
-    CUtils.toLocalFile(Qt.resolvedUrl("../utils/scripts/ff_open_window.py"))
+    readonly property string script_path:CUtils.toLocalFile(Qt.resolvedUrl("../utils/scripts/ff_open_window.py"))
     
+    function saveSettings(){
+        settingsFile.setText(JSON.stringify(root.settings,null,4))
+    }
     function runPython(args, callback) {
         root.processQueue=[...root.processQueue,{args:[...args],callback}]
         root.processNext()
@@ -122,6 +136,18 @@ Singleton{
         }
         clear_selected_theme_and_urls()
     }
+    function addShortcut(name,url,icon){
+        if (name ==="" || url ===""){
+            return
+        }
+        const newShortcut = {
+            name:name,
+            url:url,
+            icon:icon
+        }
+        settings.shortcuts=[...settings.shortcuts,newShortcut]
+        saveSettings()
+    }
     Process {
         id: pythonProcess
         property var currentCallback: null
@@ -153,5 +179,25 @@ Singleton{
 
             root.processNext()
         }
+    }
+    FileView {
+        id: settingsFile
+
+        path: Quickshell.env("HOME") + "/.config/ffmanager/ffmanager.json"
+
+        watchChanges: true
+
+        onLoaded: {
+            root.settings=JSON.parse(text())
+        }
+        onLoadFailed: error =>{
+            console.log("Failed to load FFmanager settings:", error)
+        }
+        onSaveFailed: error => {
+            console.error("Failed to save FFmanager settings:", error)
+        }
+    }
+    Component.onCompleted:{
+        //for tests
     }
 }

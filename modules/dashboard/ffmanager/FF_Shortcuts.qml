@@ -40,50 +40,23 @@ Item{
                 spacing: Tokens.spacing.small
                 height: scroll.height
 
-                IconButton { 
-                    icon: "search"
+                Shortcut_Buttons { 
+                    icon: "home"
+                    url:"moz-extension://3c85b90e-3853-4bde-9de3-3f10387c5e00/src/newtab.html"
                     type: ButtonBase.Tonal
-                    onClicked: {}
+                    onClicked: FFManager_Data.addUrl(url)
                 }
-                IconButton { 
-                    icon: "network_intelligence" 
+                Shortcut_Buttons { 
+                    icon: ""
+                    url:"https://chatgpt.com/"
                     type: ButtonBase.Tonal
-                    onClicked: {FFManager_Data.addUrl("https://chatgpt.com/")}
+                    onClicked: FFManager_Data.addUrl(url)
                 }
-                IconButton { 
-                    icon: "smart_display" 
+                Shortcut_Buttons { 
+                    icon: "smart_display"
+                    url:"https://www.youtube.com/"
                     type: ButtonBase.Tonal
-                    onClicked: {FFManager_Data.addUrl("https://www.youtube.com/")}
-                }
-                IconButton { 
-                    icon: "search"
-                    type: ButtonBase.Tonal
-                    onClicked: {}
-                }
-                IconButton { 
-                    icon: "network_intelligence" 
-                    type: ButtonBase.Tonal
-                    onClicked: {}
-                }
-                IconButton { 
-                    icon: "smart_display" 
-                    type: ButtonBase.Tonal
-                    onClicked: {}
-                }
-                                IconButton { 
-                    icon: "search"
-                    type: ButtonBase.Tonal
-                    onClicked: {}
-                }
-                IconButton { 
-                    icon: "network_intelligence" 
-                    type: ButtonBase.Tonal
-                    onClicked: {}
-                }
-                IconButton { 
-                    icon: "smart_display" 
-                    type: ButtonBase.Tonal
-                    onClicked: {}
+                    onClicked: FFManager_Data.addUrl(url)
                 }
             }
 
@@ -124,7 +97,7 @@ Item{
             Layout.alignment: Qt.AlignVCenter
             icon: "settings"
             type: ButtonBase.Filled
-            onClicked: {}
+            onClicked: {FFManager_Data.settingsOpen = !FFManager_Data.settingsOpen}
         }
     }
 }

@@ -38,7 +38,7 @@ ButtonBase {
         id: label
 
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: 1 // AHHHHHHH material symbols whyyyy
+        anchors.verticalCenterOffset: 1 // AHHHHHHH material symbols whyyyy //BAHAHAHHAHAHAHAHHA x)
         color: root.onColour
         fontStyle: root.font
         fill: !root.isToggle || root.internalChecked ? 1 : 0

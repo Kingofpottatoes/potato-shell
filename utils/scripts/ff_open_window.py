@@ -85,7 +85,6 @@ def get_url_from_theme(name):
         theme_tabs=theme["tabs"]
         urls= [theme_tabs[i]["url"] for i in range(0,len(theme_tabs)) if theme_tabs[i]["url"].startswith(("http://", "https://"))]
     return urls
-
 def open(name="",supplementary_urls=None,workspace_destination=None,special=True):
     if supplementary_urls==None:
         supplementary_urls=[]
