@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Caelestia.Config
 import Caelestia
 
 Singleton{
@@ -12,13 +11,12 @@ Singleton{
     property var theme_url_list:[] //url of the theme selected if only one, else [] 
     property var selectedUrls: [] //url added by the sortcuts
     property var selectedThemes:[] //list of selected themes
-    property var single_window_urls:[] //list of urls who will be launched
     property var showed_urls:[] //url showed
     property string workspace_destination: "" //workspace selection
     property var processQueue: [] //list of python request
     property bool processBusy: false //is the Process busy
-    property int requestId:0 //avoid getting outdated response
-    property int hoverRequestId:0 
+    property int hoverRequestId:0 //to avoid getting outdated response
+    property bool special:true
     readonly property string script_path:
     
     CUtils.toLocalFile(Qt.resolvedUrl("../utils/scripts/ff_open_window.py"))
@@ -95,9 +93,15 @@ Singleton{
             root.showed_urls = [...root.selectedUrls]
         }
     }
+    function delete_selected_themes(){
+        for (const theme_name of selectedThemes){
+        runPython(["--theme-name",theme_name,"--delete"])
+        }    
+        clear_selected_theme_and_urls()
+        get_themes_names()
+    }
     function open_windows(selectedThemes,workspace_destination,selectedUrls){
-        const workspace_args= workspace_destination!=="" ? ["--workspace",workspace_destination]:[]
-
+        const workspace_args= workspace_destination!=="" ? ["--workspace",workspace_destination,...(special ? ["--special"]:[])]:[]
         if (selectedThemes.length > 1){
             //one window for each theme
             for (const theme_name of selectedThemes){
@@ -117,10 +121,6 @@ Singleton{
             runPython(["--urls",...selectedUrls,...workspace_args],function(result){})
         }
         clear_selected_theme_and_urls()
-
-
-
-
     }
     Process {
         id: pythonProcess
@@ -144,7 +144,7 @@ Singleton{
                     console.error("Sortie reçue :", outputText)
                 }
             } 
-            else {
+            else if (exitCode !== 0) {
                 console.error("Python a terminé avec le code :", exitCode)
                 console.error("Sortie :", outputText)
             }

@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
@@ -50,9 +49,9 @@ Item{
             onClicked: {FFManager_Data.clear_selected_theme_and_urls()}
         }
         IconButton { 
-            icon: "place_item" 
-            type: ButtonBase.Filled
-            onClicked: {}
+            icon: "delete" 
+            type: ButtonBase.Tonal
+            onClicked: {FFManager_Data.delete_selected_themes()}
         }
         IconButton { 
             icon: "play_arrow" 

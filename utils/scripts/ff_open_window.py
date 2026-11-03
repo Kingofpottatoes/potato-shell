@@ -86,12 +86,14 @@ def get_url_from_theme(name):
         urls= [theme_tabs[i]["url"] for i in range(0,len(theme_tabs)) if theme_tabs[i]["url"].startswith(("http://", "https://"))]
     return urls
 
-def open(name="",supplementary_urls=None,workspace_destination=None):
+def open(name="",supplementary_urls=None,workspace_destination=None,special=True):
     if supplementary_urls==None:
         supplementary_urls=[]
     if workspace_destination==None:
         target_ws="special:"+str(first_unoccupied(1,occupied_ws(True),99))
-    else :
+    elif special :
+        target_ws="special:"+workspace_destination
+    else:
         target_ws=workspace_destination
     currents_windows=window_addresses()
     if name!="":
@@ -108,6 +110,8 @@ def list_themes(themes_folder):
     themes_names=themes_folder.glob("*.json")
     themes_names=[name.stem for name in themes_names if is_valid_name(name.stem)]
     return sorted(themes_names)
+def delete_theme_file(theme_path,):
+        theme_path.unlink(missing_ok=True)
 def help():
     return "utulisations:\n python ff_window.py --theme-name NOM_THEME --urls URL1 URL2 URL3... --wokspace WORKSPACE_DESTINATION \n python ff_window.py --list \n python ff_window.py --list-theme-urls THEME_NAME"
 def main():
@@ -117,6 +121,8 @@ def main():
     theme_name=""
     suppelementary_urls=[]
     workspace_destination=None
+    special=False
+    delete=False
     if args and args[0]=="--list":
         if len(args) != 1:
             print(help(), file=sys.stderr)
@@ -133,9 +139,17 @@ def main():
         return 0
     for arg in args:
         if arg.startswith("--"):
-            if arg not in ("--theme-name", "--urls", "--workspace"):
+            if arg not in ("--theme-name", "--urls", "--workspace","--special","--delete"):
                 print(help(), file=sys.stderr)
                 return 2
+            if arg == "--special":
+                special = True
+                current_option = None
+                continue
+            if arg =="--delete":
+                delete=True                
+                current_option = None
+                continue
             current_option = arg
             continue
         if current_option=="--theme-name":
@@ -147,7 +161,18 @@ def main():
         else:
             print(help(), file=sys.stderr)
             return 2
-    open(name=theme_name,supplementary_urls=suppelementary_urls,workspace_destination=workspace_destination)
+    if delete:
+        if not is_valid_name(theme_name):
+            raise ValueError(f"{theme_name} is not a valid name")
+        delete_theme_file(themes_path / f"{theme_name}.json")
+    else:
+        open(
+            name=theme_name,
+            supplementary_urls=suppelementary_urls,
+            workspace_destination=workspace_destination,
+            special=special
+        )
+
     return 0
 if __name__ == "__main__":
     sys.exit(main())

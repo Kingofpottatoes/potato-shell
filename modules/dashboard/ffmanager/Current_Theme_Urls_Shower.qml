@@ -18,7 +18,7 @@ Item{
         ColumnLayout{
             anchors.fill:parent
             anchors.margins:12
-            spacing:8
+            spacing:16
 
             FF_Workspace_Selector{
                 Layout.fillWidth:true

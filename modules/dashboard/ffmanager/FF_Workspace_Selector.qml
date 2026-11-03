@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
 import qs.components.controls
+import qs.services
 
 Item{
     id:root
@@ -48,20 +49,30 @@ Item{
                 Item{
                     id:manuel
                     ColumnLayout {
+                        id:workspaceInput
                         anchors.fill: parent
                         spacing: 0
                         StyledTextField{
                             Layout.fillWidth: true
                             placeholderText: "Enter Workspace desination name"
+                            onTextChanged:{
+                                FFManager_Data.workspace_destination = text
+                            }
                         }
                     }
                 }
             }
             StyledSwitch {
-                checked: root.workspaceType === "special"
+                checked: FFManager_Data.special===true
 
                 onToggled: {
-                    root.workspaceType = checked ? "special" : "normal"
+                    if (FFManager_Data.special){
+                        FFManager_Data.special=false
+                    }
+                    else {
+                        FFManager_Data.special=true
+                    }
+
                 }
             }
 
