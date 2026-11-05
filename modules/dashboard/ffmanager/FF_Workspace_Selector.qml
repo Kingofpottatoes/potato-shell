@@ -66,12 +66,7 @@ Item{
                 checked: FFManager_Data.special===true
 
                 onToggled: {
-                    if (FFManager_Data.special){
-                        FFManager_Data.special=false
-                    }
-                    else {
-                        FFManager_Data.special=true
-                    }
+                    FFManager_Data.special=!FFManager_Data.special
 
                 }
             }

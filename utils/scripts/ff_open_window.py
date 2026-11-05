@@ -76,16 +76,15 @@ def move_window(address,workspace):
             else:
                 raise RuntimeError("window didnt move")
     raise RuntimeError("window disapeared")
-def get_url_from_theme(name):
-    themes_folder=Path.home()/".local"/"share"/"ff-windows"
-    theme_path=themes_folder/(name+".json")
+def get_url_from_theme(name,themes_path):
+    theme_path=themes_path/(name+".json")
 
     with theme_path.open() as f:
         theme=json.load(f)
         theme_tabs=theme["tabs"]
         urls= [theme_tabs[i]["url"] for i in range(0,len(theme_tabs)) if theme_tabs[i]["url"].startswith(("http://", "https://"))]
     return urls
-def open(name="",supplementary_urls=None,workspace_destination=None,special=True):
+def open_new_window(themes_path,name="",supplementary_urls=None,workspace_destination=None,special=True):
     if supplementary_urls==None:
         supplementary_urls=[]
     if workspace_destination==None:
@@ -96,7 +95,7 @@ def open(name="",supplementary_urls=None,workspace_destination=None,special=True
         target_ws=workspace_destination
     currents_windows=window_addresses()
     if name!="":
-        urls=get_url_from_theme(name)+supplementary_urls
+        urls=get_url_from_theme(name,themes_path)+supplementary_urls
     else:
         urls=supplementary_urls
     launch_firefox(urls)
@@ -111,10 +110,20 @@ def list_themes(themes_folder):
     return sorted(themes_names)
 def delete_theme_file(theme_path,):
         theme_path.unlink(missing_ok=True)
+def create_theme_file(theme_path,name,urls):
+    if theme_path.exists():
+        raise FileExistsError(f"Theme {name} already exists")
+    data={
+        "name":name,
+        "tabs":[{"url":urls[i],"title":"TODO","pinned":False} for i in range(0,len(urls))]
+    }
+    with theme_path.open("w", encoding="utf-8") as f:
+        json.dump(data,f,indent=4)
 def help():
     return "utulisations:\n python ff_window.py --theme-name NOM_THEME --urls URL1 URL2 URL3... --wokspace WORKSPACE_DESTINATION \n python ff_window.py --list \n python ff_window.py --list-theme-urls THEME_NAME"
 def main():
-    themes_path=Path.home()/".local"/"share"/"ff-windows"
+    themes_path=Path.home()/".local"/"share"/"ff-manager"
+    themes_path.mkdir(parents=True, exist_ok=True)
     args=sys.argv[1:]
     current_option=None
     theme_name=""
@@ -122,6 +131,7 @@ def main():
     workspace_destination=None
     special=False
     delete=False
+    create=False
     if args and args[0]=="--list":
         if len(args) != 1:
             print(help(), file=sys.stderr)
@@ -134,11 +144,11 @@ def main():
             print(help(), file=sys.stderr)
             return 2
 
-        print(json.dumps(get_url_from_theme(args[1])))
+        print(json.dumps(get_url_from_theme(args[1],themes_path)))
         return 0
     for arg in args:
         if arg.startswith("--"):
-            if arg not in ("--theme-name", "--urls", "--workspace","--special","--delete"):
+            if arg not in ("--theme-name", "--urls", "--workspace","--special","--delete","--create-theme"):
                 print(help(), file=sys.stderr)
                 return 2
             if arg == "--special":
@@ -148,6 +158,10 @@ def main():
             if arg =="--delete":
                 delete=True                
                 current_option = None
+                continue
+            if arg=="--create-theme":
+                create=True
+                current_option=None
                 continue
             current_option = arg
             continue
@@ -160,12 +174,20 @@ def main():
         else:
             print(help(), file=sys.stderr)
             return 2
+    if create and delete:
+        raise ValueError("Cannot create and delete a theme simultaneously")
     if delete:
         if not is_valid_name(theme_name):
             raise ValueError(f"{theme_name} is not a valid name")
         delete_theme_file(themes_path / f"{theme_name}.json")
+    elif create:
+        if not is_valid_name(theme_name):
+            raise ValueError(f"{theme_name} is not a valid name")
+        create_theme_file(themes_path / f"{theme_name}.json",theme_name,suppelementary_urls)#we use supplementary urk even if we should create a var new_theme_url but i dont care, it work and dont break anything
+        print(json.dumps({"success": True}))
     else:
-        open(
+        open_new_window(
+            themes_path,
             name=theme_name,
             supplementary_urls=suppelementary_urls,
             workspace_destination=workspace_destination,
@@ -174,4 +196,10 @@ def main():
 
     return 0
 if __name__ == "__main__":
-    sys.exit(main())
+    import traceback
+
+    try:
+        sys.exit(main())
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        sys.exit(1)

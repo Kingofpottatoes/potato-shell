@@ -39,60 +39,55 @@ Item{
                 id: urls_Row
                 spacing: Tokens.spacing.small
                 height: scroll.height
+                width: implicitWidth
 
-                Shortcut_Buttons { 
-                    icon: "home"
-                    url:"moz-extension://3c85b90e-3853-4bde-9de3-3f10387c5e00/src/newtab.html"
-                    type: ButtonBase.Tonal
-                    onClicked: FFManager_Data.addUrl(url)
+                Repeater {
+                    model: FFManager_Data.settings.shortcuts.length //use that instead of model data, bcs 
+                    // I DONT KNWO WHY but i got screen data instead of settings ??????
+                    
+                    delegate: Shortcut_Buttons {
+                        required property int index
+                        type: ButtonBase.Tonal
+                        title: FFManager_Data.settings.shortcuts[index].title
+                        url: FFManager_Data.settings.shortcuts[index].url
+                        icon: FFManager_Data.settings.shortcuts[index].icon
+                        onClicked:{FFManager_Data.addUrl(url)}
+                    }
                 }
-                Shortcut_Buttons { 
-                    icon: ""
-                    url:"https://chatgpt.com/"
-                    type: ButtonBase.Tonal
-                    onClicked: FFManager_Data.addUrl(url)
-                }
-                Shortcut_Buttons { 
-                    icon: "smart_display"
-                    url:"https://www.youtube.com/"
-                    type: ButtonBase.Tonal
-                    onClicked: FFManager_Data.addUrl(url)
-                }
-            }
 
-            WheelHandler {
-                property real scrollSensitivity: 0.3
+                WheelHandler {
+                    property real scrollSensitivity: 0.3
 
-                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
-                onWheel: event => {
-                    const flickable = scroll.contentItem
-                    const max = Math.max(0, scroll.contentWidth - scroll.availableWidth)
+                    onWheel: event => {
+                        const flickable = scroll.contentItem
+                        const max = Math.max(0, scroll.contentWidth - scroll.availableWidth)
 
-                    // On repart de la destination précédente si l'animation tourne déjà
-                    const current = scrollAnimation.running
-                        ? scrollAnimation.to
-                        : flickable.contentX
+                        // On repart de la destination précédente si l'animation tourne déjà
+                        const current = scrollAnimation.running
+                            ? scrollAnimation.to
+                            : flickable.contentX
 
-                    const target = Math.max(
-                        0,
-                        Math.min(max, current - event.angleDelta.y * scrollSensitivity)
-                    )
+                        const target = Math.max(
+                            0,
+                            Math.min(max, current - event.angleDelta.y * scrollSensitivity)
+                        )
 
-                    scrollAnimation.stop()
-                    scrollAnimation.to = target
-                    scrollAnimation.start()
+                        scrollAnimation.stop()
+                        scrollAnimation.to = target
+                        scrollAnimation.start()
 
-                    event.accepted = true
+                        event.accepted = true
+                    }
                 }
             }
-        }
 
-        Item {
-            Layout.fillWidth: true
-            Layout.minimumWidth: 0
+            Item {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+            }
         }
-
         IconButton {
             Layout.alignment: Qt.AlignVCenter
             icon: "settings"

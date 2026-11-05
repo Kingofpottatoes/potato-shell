@@ -7,19 +7,22 @@ import Caelestia
 
 Singleton{
     id:root
+    //selection property
     property var themes_list:[]//theme list showed
     property var theme_url_list:[] //url of the theme selected if only one, else [] 
     property var selectedUrls: [] //url added by the sortcuts
     property var selectedThemes:[] //list of selected themes
     property var showed_urls:[] //url showed
     property string workspace_destination: "" //workspace selection
+    property bool special:true //do we send the window in a special workspace ?
+    //process property
     property var processQueue: [] //list of python request
     property bool processBusy: false //is the Process busy
     property int hoverRequestId:0 //to avoid getting outdated response
-    property bool special:true //do we send the window in a special workspace ?
+    //settings
     property bool settingsOpen:false //is settings window open ?
     property var settings: ({ //default settings, you have the syntax now :)
-            "shortcuts": [        {
+            "shortcuts": [{
                 "title": "GitHub",
                 "url": "https://github.com",
                 "icon": "code"
@@ -29,7 +32,15 @@ Singleton{
                 "special": true
             }
         })
-    
+    //theme creator property
+    property string theme_creator_name:""
+    property string theme_creator_current_url:""
+    property var theme_creator_urls : []
+    //shortcut creator property
+    property string shortcut_name:""
+    property string shortcut_icon:""
+    property string shortcut_url:""
+    //script path
     readonly property string script_path:CUtils.toLocalFile(Qt.resolvedUrl("../utils/scripts/ff_open_window.py"))
     
     function saveSettings(){
@@ -148,6 +159,16 @@ Singleton{
         settings.shortcuts=[...settings.shortcuts,newShortcut]
         saveSettings()
     }
+    function addTheme(name,urls){
+        if (name ==="" || urls.length === 0){
+            return
+        }
+        runPython(["--theme-name",name,"--urls",...urls,"--create-theme"],
+            function(result) {
+                FFManager_Data.get_themes_names()
+            })
+        saveSettings()
+    }
     Process {
         id: pythonProcess
         property var currentCallback: null
@@ -156,10 +177,11 @@ Singleton{
         stdout: StdioCollector {
             id:output
         }
-
+        stderr: StdioCollector {
+            id: errorOutput
+        }
         onExited:(exitCode,exitStatus)=>{
             const outputText=output.text.trim()
-
             if (exitCode==0 && outputText !== ""){
                 try {
                     const result = JSON.parse(outputText)
@@ -168,6 +190,7 @@ Singleton{
                 } catch(error) {
                     console.error("Erreur JSON Python :", error)
                     console.error("Sortie reçue :", outputText)
+                    console.error(errorOutput)
                 }
             } 
             else if (exitCode !== 0) {

@@ -26,6 +26,21 @@ Item{
             }
             ColumnLayout {
                 width: scroll.availableWidth
+                height:scroll.availableHeight
+                Item{
+                    Layout.fillHeight:true
+                    Layout.fillWidth:true
+                    StyledText {
+                        anchors.centerIn: parent
+                        anchors.verticalCenterOffset: -20
+                        visible: root.urls.length === 0
+                        text: "No URLS to show.\nHover or select a theme or add an URL with shortcuts."
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment:Text.AlignVCenter
+                        wrapMode: Text.WordWrap
+                        opacity: 0.3
+                    }
+                }
                 Repeater {
                     model: root.urls
                     delegate: Url {
